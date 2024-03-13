@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:js_interop';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -13,6 +14,7 @@ registerUser(email, password, username) async {
     password: password,
   );
   setUserDisplayName(username);
+  createUserCollection();
   return credential;
 }
 
@@ -66,7 +68,7 @@ String? getUserPicture(){
 void setUserDisplayName(String username){
   FirebaseAuth.instance.currentUser?.updateDisplayName(username);
 }
-void setUserPicture(File file) async {
+Future<String?> setUserPicture(File file) async {
   String userId = FirebaseAuth.instance.currentUser!.uid;
   String fileName = 'profile_picture.jpg';
   Reference reference = FirebaseStorage.instance.ref('UsersPicture/$userId/$fileName');
@@ -75,21 +77,44 @@ void setUserPicture(File file) async {
   TaskSnapshot snapshot = await uploadTask.whenComplete(() => print('File uploaded'));
   String downloadURL = await snapshot.ref.getDownloadURL();
   FirebaseAuth.instance.currentUser?.updatePhotoURL(downloadURL);
-  print(downloadURL);
+  return downloadURL;
 }
 //==========
 
 //===== Collection =====
 CollectionReference collections = FirebaseFirestore.instance.collection('collections');
-/* 
-Future<void> addUser() {
-  // Call the user's CollectionReference to add a new user
+
+Future<void> createUserCollection() {
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+
   return collections
-      .add({
-        'uid': fullName,
-        'company': company,
-      })
-      .then((value) => print("User Added"))
-      .catchError((error) => print("Failed to add user: $error"));
-} */
+    .doc(userId)
+    .set({
+      'items': []
+    })
+    .then((value) => print("User Collection Created"))
+    .catchError((error) => print("Failed to create user collection: $error"));
+}
+
+Future<DocumentSnapshot<Object?>> getUserCollection() {
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+
+  return collections
+    .doc(userId)
+    .get();
+}
+
+Future<void> addItemToCollection(int stickerID) async {
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+
+  DocumentSnapshot<Object?> userCollection = await getUserCollection();
+  //print(userCollection.data().runtimeType);
+  return collections
+    .doc(userId)
+    .set({
+      'items': []//userCollection.data()?["items"].add(stickerID)
+    })
+    .then((value) => print("User Collection Created"))
+    .catchError((error) => print("Failed to create user collection: $error"));
+}
 //======================
