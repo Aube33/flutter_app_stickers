@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "918458013291",
+    "project_id": "stickerapp-b8dd7",
+    "storage_bucket": "stickerapp-b8dd7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:918458013291:android:dc19fd291fd0d94188832e",
+        "android_client_info": {
+          "package_name": "com.example.stickershub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "918458013291-990uei8tqu5ddeqgqr3oes9tj8arm865.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_2nZSO9SQ794YDAXPJ0fx82jKJbRtWnM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "918458013291-990uei8tqu5ddeqgqr3oes9tj8arm865.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "918458013291-7102qnl968rnrkjvjnke4lgqikcpnef6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.stickershub.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:918458013291:android:3814ee9e399ede8788832e",
+        "android_client_info": {
+          "package_name": "fr.stickercorp.stickerhub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "918458013291-990uei8tqu5ddeqgqr3oes9tj8arm865.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_2nZSO9SQ794YDAXPJ0fx82jKJbRtWnM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "918458013291-990uei8tqu5ddeqgqr3oes9tj8arm865.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "918458013291-7102qnl968rnrkjvjnke4lgqikcpnef6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.stickershub.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
