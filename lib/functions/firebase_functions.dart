@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:js_interop';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,6 +13,8 @@ registerUser(email, password, username) async {
   );
   setUserDisplayName(username);
   createUserCollection();
+
+  print(FirebaseAuth.instance.currentUser);
   return credential;
 }
 
@@ -85,7 +85,10 @@ Future<String?> setUserPicture(File file) async {
 CollectionReference collections = FirebaseFirestore.instance.collection('collections');
 
 Future<void> createUserCollection() {
+  print("test 1");
   String userId = FirebaseAuth.instance.currentUser!.uid;
+
+  print(userId);
 
   return collections
     .doc(userId)
@@ -102,17 +105,26 @@ Future<DocumentSnapshot<Object?>> getUserCollection() {
   return collections
     .doc(userId)
     .get();
+    
 }
 
 Future<void> addItemToCollection(int stickerID) async {
   String userId = FirebaseAuth.instance.currentUser!.uid;
 
   DocumentSnapshot<Object?> userCollection = await getUserCollection();
-  //print(userCollection.data().runtimeType);
+  print(userCollection.data().runtimeType);
+  print(userCollection["items"]);
+
+  if (userCollection["items"] !=null){
+    userCollection = userCollection["items"].add(stickerID);
+  }
+
+  print(userCollection["items"]);
+
   return collections
     .doc(userId)
     .set({
-      'items': []//userCollection.data()?["items"].add(stickerID)
+      'items': userCollection["items"] ?? [],
     })
     .then((value) => print("User Collection Created"))
     .catchError((error) => print("Failed to create user collection: $error"));
