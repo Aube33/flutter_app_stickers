@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:stickershub/screens/collection_page.dart';
 import 'package:stickershub/screens/home_page.dart';
 import 'package:stickershub/screens/profile_page.dart';
+import 'package:stickershub/screens/clicky_page.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({Key? key}) : super(key: key);
@@ -31,8 +32,8 @@ class _NavBarState extends State<NavBar> {
       _currentIndex = index;
       _pageController.animateToPage(
         index,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.elasticInOut,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.bounceInOut,
       );
     });
   }
@@ -47,31 +48,38 @@ class _NavBarState extends State<NavBar> {
             _currentIndex = index;
           });
         },
+        physics: const NeverScrollableScrollPhysics(),
         children: const <Widget>[
-          HomePage(),
+          ClickyPage(),
           CollectionPage(),
           ProfilePage(),
         ],
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Collection',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          // Add more items as needed
-        ],
+      bottomNavigationBar: ClipRRect(
+        borderRadius: const BorderRadius.only(                                           
+          topLeft: Radius.circular(30.0),                                            
+          topRight: Radius.circular(30.0),                                           
+        ), 
+        child: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: _onTabTapped,
+          destinations: const <NavigationDestination>[
+            NavigationDestination(
+              icon: Icon(Icons.touch_app),
+              label: 'Clicker',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.menu_book),
+              label: 'Collection',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+            // Add more items as needed
+          ],
+        ),
       ),
     );
   }

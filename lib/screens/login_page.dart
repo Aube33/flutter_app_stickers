@@ -23,8 +23,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Login Page'),
+        title: const Text('Login'),
         leading: null,
       ),
       body: Center(
@@ -34,10 +33,11 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(
               width: 300,
               child: TextFormField(
+                autofillHints: const [AutofillHints.email],
                 controller: _emailTxtController,
                 decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
-                  labelText: 'Votre e-mail',
+                  labelText: 'Your e-mail',
                   errorText: _errorTextEmail,
                 ),
                 onChanged: (_) => setState(() {
@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
                 controller: _passwordTxtController,
                 decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
-                  labelText: 'Votre mot de passe',
+                  labelText: 'Your password',
                   errorText: _errorTextPassword,
                 ),
                 onChanged: (_) => setState(() {
@@ -70,10 +70,9 @@ class _LoginPageState extends State<LoginPage> {
                           MaterialStateProperty.all<Color>(Colors.grey),
                     ),
                     onPressed: () {
-                      // Navigator.push(MaterialPageRoute(builder: (context)=>const RegisterPage()));
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const RegisterPage()));
+                      Navigator.pushReplacementNamed(context, "/register");
                     },
-                    child: const Text("Je n'ai pas de compte"),
+                    child: const Text("Don't have account ?"),
                   ),
                 ),
 
@@ -89,15 +88,15 @@ class _LoginPageState extends State<LoginPage> {
                         _emailTxtController.text);
                       if (result != null) {
                         setState(() {
-                          _errorTextEmail = 'E-mail invalide !';
+                          _errorTextEmail = 'Invalid e-mail !';
                         });
                       } else {
                         setState(() {
-                          _errorTextEmail = 'E-mail de réinitialisation envoyé !';
+                          _errorTextEmail = 'Reset e-mail sent !';
                         });
                       }
                     },
-                    child: const Text("Mot de passe oublié"),
+                    child: const Text("Forgot password ?"),
                   ),
                 ),
 
@@ -119,10 +118,10 @@ class _LoginPageState extends State<LoginPage> {
                       print('User signed in: ${result.user?.email}');
                       print(FirebaseAuth.instance.currentUser);
                       */
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AuthCheckPage()));
+                      Navigator.pushReplacementNamed(context, "/auth");
                     } else {
                       setState(() {
-                        _errorTextPassword = "La connexion a échoué !";
+                        _errorTextPassword = "Login failed !";
                       });
                     }
                   } catch (error) {
@@ -135,28 +134,28 @@ class _LoginPageState extends State<LoginPage> {
                       print(error.code);
                       if (error.code == 'INVALID_LOGIN_CREDENTIALS') {
                         setState(() {
-                          _errorTextPassword = 'Mauvais identifiants';
+                          _errorTextPassword = 'Bad authentification !';
                         });
                       } else if (error.code == 'user-disabled') {
                         setState(() {
-                          _errorTextEmail = 'Compte désactivé';
+                          _errorTextEmail = 'Account disabled';
                         });
                       } else if (error.code == 'too-many-requests') {
                         setState(() {
-                          _errorTextPassword = 'Veuillez ressayer plus tard';
+                          _errorTextPassword = 'Please try later';
                         });
                       } else if (error.code == 'wrong-password') {
                         setState(() {
-                          _errorTextPassword = 'Mauvais mot de passe';
+                          _errorTextPassword = 'Bad password !';
                         });
                       }
                     } else {
                       // Gérez d'autres erreurs ici
-                      print('Erreur inattendue: $error');
+                      print('Error: $error');
                     }
                   }
                 },
-                child: const Text("Se connecter"),
+                child: const Text("Login"),
               ),
             )
           ],

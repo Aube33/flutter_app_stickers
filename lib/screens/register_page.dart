@@ -29,7 +29,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final password = _passwordTxtController.value.text;
 
     if (password.length < 6 && password.isNotEmpty) {
-      return 'Mot de passe trop court (- de 6 caractères)';
+      return 'Password toot short (lass than 6 characters)';
     }
     return null;
   }
@@ -39,7 +39,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final passwordCheck = _passwordCheckTxtController.value.text;
 
     if (password!=passwordCheck){
-      return 'Les mots de passes ne correspondent pas';
+      return "Passwords don't match";
     }
     return null;
   }
@@ -50,8 +50,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Register Page'),
+        title: const Text('Register'),
         leading: null,
       ),
       body: Center(
@@ -64,7 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: _usernameTxtController,
                 decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
-                  labelText: 'Votre pseudo',
+                  labelText: 'Your name',
                   errorText: _errorTextUsername,
                   prefixIcon: const Padding(
                     padding: EdgeInsets.only(right: 0), // add padding to adjust icon
@@ -80,7 +79,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: _emailTxtController,
                 decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
-                  labelText: 'Votre e-mail',
+                  labelText: 'Your e-mail',
                   errorText: _errorTextEmail,
                   prefixIcon: const Padding(
                     padding: EdgeInsets.only(right: 0), // add padding to adjust icon
@@ -97,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: _passwordTxtController,
                 decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
-                  labelText: 'Votre mot de passe',
+                  labelText: 'Your Password',
                   errorText: _errorTextPassword,
                   prefixIcon: const Padding(
                     padding: EdgeInsets.only(right: 0), // add padding to adjust icon
@@ -118,7 +117,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: _passwordCheckTxtController,
                 decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
-                  labelText: 'Retapez votre mot de passe',
+                  labelText: 'Retype password',
                   errorText: _errorTextPasswordCheck,
                   prefixIcon: const Padding(
                     padding: EdgeInsets.only(right: 0), // add padding to adjust icon
@@ -138,9 +137,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
                   ),
                   onPressed: () {
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                    Navigator.pushReplacementNamed(context, "/login");
                   },
-                  child: const Text("J'ai déjà un compte"),
+                  child: const Text("Already have an account"),
                 ),
             ),
 
@@ -156,35 +155,35 @@ class _RegisterPageState extends State<RegisterPage> {
                     try {
                       UserCredential? result = await registerUser(_emailTxtController.text, _passwordTxtController.text, _usernameTxtController.text);
                       if (result != null) {
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AuthCheckPage()));
+                        Navigator.pushReplacementNamed(context, "/auth");
                       } else {
                         setState(() {
-                          _errorTextPassword = "L'inscription a échoué !";
+                          _errorTextPassword = "Registration failed !";
                         });
                       }
                     } catch (error) {
                       if (error is FirebaseAuthException) {
                         if(error.code=='weak-password'){
                           setState(() {
-                            _errorTextPassword = 'Mot de passe trop faible';
+                            _errorTextPassword = 'Password too weak';
                           });
                         } else if(error.code=='email-already-in-use'){
                           setState(() {
-                            _errorTextEmail='Email déjà utilisée';
+                            _errorTextEmail='E-mail already used';
                           });
                         } else if(error.code=='invalid-email'){
                           setState(() {
-                            _errorTextEmail='Email invalide';
+                            _errorTextEmail='Invalid e-mail';
                           });
                         }
                       } else {
                         // Gérez d'autres erreurs ici
-                        print('Erreur inattendue: $error');
+                        print('Error: $error');
                       }
                     }
                   }
                 },
-                child: const Text("S'inscrire"),
+                child: const Text("Sign up"),
               ),
             )
           ],
