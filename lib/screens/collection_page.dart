@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:stickershub/functions/firebase_functions.dart';
 import 'package:stickershub/functions/global_functions.dart';
+import 'package:stickershub/screens/newTrade_page.dart';
 
 class CollectionPage extends StatefulWidget {
   const CollectionPage({super.key});
@@ -12,7 +13,6 @@ class CollectionPage extends StatefulWidget {
 }
 
 class _CollectionPageState extends State<CollectionPage> with TickerProviderStateMixin {
-  bool _isPressed = false;
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
 
@@ -20,10 +20,10 @@ class _CollectionPageState extends State<CollectionPage> with TickerProviderStat
   initState() {
     super.initState();
     _flipController = AnimationController(
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _flipAnimation = Tween<double>(begin: 0, end: 2).animate(CurvedAnimation(parent: _flipController, curve: const ElasticInOutCurve(0.4)));
+    _flipAnimation = Tween<double>(begin: 0, end: 2).animate(CurvedAnimation(parent: _flipController, curve: const FlippedCurve(Curves.bounceIn)));
   }
 
 
@@ -78,7 +78,7 @@ class _CollectionPageState extends State<CollectionPage> with TickerProviderStat
                             return StatefulBuilder(
                               builder: (BuildContext context, StateSetter setState) {
                                 return Container(
-                                  height: 350,
+                                  height: 400,
                                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
@@ -111,7 +111,7 @@ class _CollectionPageState extends State<CollectionPage> with TickerProviderStat
                                             builder: (context, child) {
                                               return Transform(
                                                 transform: Matrix4.rotationY(_flipAnimation.value * pi),
-                                                origin: Offset(150/2, 150/2),
+                                                origin: const Offset(150/2, 150/2),
                                                 child: child,
                                               );
                                             },
@@ -143,11 +143,24 @@ class _CollectionPageState extends State<CollectionPage> with TickerProviderStat
                                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                                           ),
                                           Text(
-                                            count.toString(),
+                                            "x$count",
                                             style: const TextStyle(fontSize: 17),
                                           ),
                                         ],
                                       ),
+                                      const Spacer(),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(builder: (context) => NewTradePage(stickerId: sticker["id"])),
+                                            );
+                                          }, 
+                                          child: const Text("Trade")
+                                        ),
+                                      )
                                     ],
                                   ),
                                 );
@@ -155,6 +168,8 @@ class _CollectionPageState extends State<CollectionPage> with TickerProviderStat
                             );
                           },
                         );
+                        _flipController.reset();
+                        _flipController.forward();
                       },
                       child: Container(
                         padding: const EdgeInsets.all(3),

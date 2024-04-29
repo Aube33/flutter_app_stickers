@@ -34,6 +34,37 @@ logoutUser() async {
   await FirebaseAuth.instance.signOut();
 }
 
+Future<void> deleteAccount(String password) async {
+  User? user = FirebaseAuth.instance.currentUser;
+  await user!.reauthenticateWithCredential(
+    EmailAuthProvider.credential(
+      email: user.email!,
+      password: password,
+    ),
+  );
+
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+
+  // Supprime les trades avec l'utilisateur en auteur
+  QuerySnapshot<Object?> tradesSnapshot = await tradingCollections.where('author', isEqualTo: userId).get();
+  for (QueryDocumentSnapshot<Object?> trade in tradesSnapshot.docs) {
+    await tradingCollections.doc(trade.id).delete();
+  }
+
+  await userCollections.doc(userId).delete();
+  // Supprime la pp de l'utilisateur
+  Reference userPictureRef = FirebaseStorage.instance.ref('UsersPicture/$userId');
+  try {
+    await userPictureRef.getDownloadURL();
+    await userPictureRef.delete();
+  } catch(e) {
+    print('Le fichier de l\'utilisateur n\'existe pas dans Firebase Storage');
+  }
+
+  // Supprime le compte Firebase Auth
+  await FirebaseAuth.instance.currentUser!.delete();
+}
+
 Future<String?> resetPassword(email) async {
   final bool emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9-]+\.[a-zA-Z]+").hasMatch(email);
   if(emailValid){
@@ -73,8 +104,6 @@ String? getUserPicture(){
 Future<List<Map<String, dynamic>>> getUserStickers() async {
   DocumentSnapshot<Object?> userCollection = await getUserCollection();
   List<Map<String, dynamic>> stickers = [];
-
-  print(userCollection.data());
 
   if (userCollection.exists && userCollection.data() is Map<String, dynamic>) {
     Map<String, dynamic> collectionData = userCollection.data() as Map<String, dynamic>;
@@ -203,6 +232,19 @@ Future<int> getUserStickerCount() async {
   }
 }
 
+Future<bool> userHasSticker(int stickerID) async {
+  DocumentSnapshot<Object?> userCollection = await getUserCollection();
+
+  if (userCollection.exists && userCollection.data() is Map<String, dynamic>) {
+    Map<String, dynamic> collectionData = userCollection.data() as Map<String, dynamic>;
+    List<dynamic> stickers = List.from(collectionData["collection"]?? []);
+
+    return stickers.contains(stickerID);
+  } else {
+    return false;
+  }
+}
+
 Future<List<Map<String, dynamic>>> getRarestStickers() async {
   List<Map<String, dynamic>> userStickers = await getUserStickers();
   if (userStickers.isNotEmpty) {
@@ -213,11 +255,38 @@ Future<List<Map<String, dynamic>>> getRarestStickers() async {
         uniqueStickers.add(sticker);
       }
     }
-    return uniqueStickers.take(3).toList(); // Prenez les 3 premiers stickers uniques, qui sont les plus rares
+    for(int i=0; i<uniqueStickers.length; i++) {
+      uniqueStickers[i]['count'] = userStickers.where((element) => element['id'] == uniqueStickers[i]['id']).first["count"];
+    }
+    return uniqueStickers.take(3).toList();
   } else {
     print("Aucun sticker trouvé pour l'utilisateur");
     return [];
   }
+}
+
+Future<int> getStickerUserCount(int stickerID) async {
+  DocumentSnapshot<Object?> userCollection = await getUserCollection();
+  if (userCollection.exists && userCollection.data() is Map<String, dynamic>) {
+    Map<String, dynamic> collectionData = userCollection.data() as Map<String, dynamic>;
+    List<dynamic> stickers = List.from(collectionData["collection"]?? []);
+    int count = 0;
+    for (dynamic id in stickers) {
+      if (id == stickerID) {
+        count++;
+      }
+    }
+    return count;
+  } else {
+    return 0;
+  }
+}
+
+Future<Map<String, dynamic>> getStickerDataWithCount(int stickerID) async {
+  Map<String, dynamic> stickerData = await getStickerFromID(stickerID);
+  int stickerCount = await getStickerUserCount(stickerID);
+  stickerData['count'] = stickerCount;
+  return stickerData;
 }
 //==========
 
@@ -257,18 +326,144 @@ Future<Map<String, dynamic>> openLootbox(int id) async {
       final random = Random();
       double randomPoint = random.nextDouble() * totalWeight;
 
+      double cumulativeWeight = 0;
       for (Map<String, dynamic> sticker in availableStickers) {
-        double weight = maxRarity.toDouble() - sticker["rarity"];
-        if (randomPoint < weight) {
+        cumulativeWeight += maxRarity.toDouble() - sticker["rarity"];
+        if (randomPoint < cumulativeWeight) {
           return sticker;
         }
-        randomPoint -= weight;
       }
     }
   }
   return {};
 }
 //==========
+
+
+//===== Trading =====
+CollectionReference tradingCollections = FirebaseFirestore.instance.collection('trading');
+
+Future<void> createTrade(int id1, int id2) async {
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+  DocumentSnapshot<Object?> userCollection = await getUserCollection();
+
+  if (userCollection.exists && userCollection.data() is Map<String, dynamic>) {
+    Map<String, dynamic> collectionData = userCollection.data() as Map<String, dynamic>;
+    List<dynamic> stickers = List.from(collectionData["collection"]?? []);
+    stickers.remove(id1);
+    await userCollections.doc(userId).update({
+      'collection': stickers
+    });
+  }
+
+  // Créer le trade
+  DocumentReference docRef = await tradingCollections.add({
+    'author': userId,
+    'offerSticker': id1,
+    'wantedSticker': id2,
+    'createdAt': FieldValue.serverTimestamp(),
+  });
+
+  DocumentSnapshot doc = await docRef.get();
+  print("Trade created successfully: ${doc.data()}");
+}
+
+Future<void> deleteTrade(String tradeId) async {
+  DocumentSnapshot<Object?> tradeData = await tradingCollections.doc(tradeId).get();
+  if (tradeData.exists && tradeData.data() is Map<String, dynamic>) {
+    Map<String, dynamic> tradeInfo = tradeData.data() as Map<String, dynamic>;
+    int offerStickerId = tradeInfo['offerSticker'];
+    addItemToCollection(offerStickerId);
+  }
+
+  // Supprime le trade
+  await tradingCollections.doc(tradeId).delete();
+  print("Trade deleted successfully");
+}
+
+Future<List<Map<String, dynamic>>> getAllTrades() async {
+  QuerySnapshot<Object?> tradesSnapshot = await tradingCollections.get();
+
+  if (tradesSnapshot.size > 0) {
+    List<Map<String, dynamic>> trades = [];
+    for (QueryDocumentSnapshot<Object?> trade in tradesSnapshot.docs) {
+      Map<String, dynamic> tradeData = trade.data() as Map<String, dynamic>;
+      String authorUid = tradeData['author'];
+      int offerStickerId = tradeData['offerSticker'];
+      int wantedStickerId = tradeData['wantedSticker'];
+      Timestamp createdAt = tradeData['createdAt'];
+      DateTime createDate = createdAt.toDate();
+
+      Map<String, dynamic> offerStickerData = await getStickerFromID(offerStickerId);
+      Map<String, dynamic> wantedStickerData = await getStickerFromID(wantedStickerId);
+
+      trades.add({
+        'id': trade.id,
+        'author': authorUid,
+        'offerSticker': offerStickerData,
+        'wantedSticker': wantedStickerData,
+        'createdAt': createDate
+      });
+    }
+
+    trades.sort((a, b) => b['createdAt'].compareTo(a['createdAt']));
+
+    return trades;
+  } else {
+    print("No trades found");
+    return [];
+  }
+}
+
+Future<bool> tradeAccept(String tradeId) async {
+  DocumentSnapshot<Object?> tradeData = await tradingCollections.doc(tradeId).get();
+  if (tradeData.exists && tradeData.data() is Map<String, dynamic>) {
+    Map<String, dynamic> tradeInfo = tradeData.data() as Map<String, dynamic>;
+    String authorUid = tradeInfo['author'];
+    int offerStickerId = tradeInfo['offerSticker'];
+    int wantedStickerId = tradeInfo['wantedSticker'];
+
+    DocumentSnapshot<Object?> authorCollection = await userCollections.doc(authorUid).get();
+    DocumentSnapshot<Object?> userCollection = await getUserCollection();
+
+    if (authorCollection.exists && authorCollection.data() is Map<String, dynamic> &&
+        userCollection.exists && userCollection.data() is Map<String, dynamic>) {
+      Map<String, dynamic> authorCollectionData = authorCollection.data() as Map<String, dynamic>;
+      Map<String, dynamic> userCollectionData = userCollection.data() as Map<String, dynamic>;
+
+      // Supprime le stickerOffer de la collection de l'auteur
+      List<dynamic> authorStickers = List.from(authorCollectionData["collection"]?? []);
+      authorStickers.remove(offerStickerId);
+      // Ajoute le stickerWanted à la collection de l'auteur
+      authorStickers.add(wantedStickerId);
+
+      // Supprime le stickerWanted de la collection de l'utilisateur actuel
+      List<dynamic> userStickers = List.from(userCollectionData["collection"]?? []);
+      userStickers.remove(wantedStickerId);
+      // Ajoute le stickerOffer à la collection de l'utilisateur actuel
+      userStickers.add(offerStickerId);
+
+      // Met à jour les collections
+      await userCollections.doc(authorUid).update({
+        'collection': authorStickers
+      });
+
+      await userCollections.doc(FirebaseAuth.instance.currentUser!.uid).update({
+        'collection': userStickers
+      });
+      print("Trade effectué avec succès");
+      Future.delayed(const Duration(seconds: 1));
+      return true;
+    } else {
+      print("Erreur lors de la récupération des collections");
+    }
+  } else {
+    print("Erreur lors de la récupération du trade");
+  }
+  return false;
+}
+//==========
+
 
 //===== Collection =====
 CollectionReference userCollections = FirebaseFirestore.instance.collection('collections');

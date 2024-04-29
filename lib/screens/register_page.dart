@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:stickershub/screens/login_page.dart';
 import '../functions/firebase_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:stickershub/screens/auth_page.dart';
 
 
 class RegisterPage extends StatefulWidget {
@@ -49,14 +47,27 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Register'),
-        leading: null,
-      ),
+      resizeToAvoidBottomInset: false,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            const Text(
+              'StickerHub',
+              style: TextStyle(fontFamily: 'GoldPlay', fontSize: 20),
+            ),
+            const Text(
+              'Register',
+              style: TextStyle(fontFamily: 'GoldPlay', fontSize: 50),
+            ),
+            SizedBox(
+              height: 130,
+              child: Image.asset(
+                'assets/lasagna-01.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 40),
             SizedBox(
               width: 300,
               child: TextFormField(
@@ -72,11 +83,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
             ),
-
+            const SizedBox(height: 20),
             SizedBox(
               width: 300,
               child: TextFormField(
                 controller: _emailTxtController,
+                autofillHints: const [AutofillHints.email],
                 decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
                   labelText: 'Your e-mail',
@@ -88,7 +100,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
             ),
-
+            const SizedBox(height: 20),
             SizedBox(
               width: 300,
               child: TextFormField(
@@ -109,7 +121,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   }),
               ),
             ),
-
+            const SizedBox(height: 20),
             SizedBox(
               width: 300,
               child: TextFormField(
@@ -131,7 +143,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
 
             Align(
-              alignment: const Alignment(0.75, 0.75),
+              alignment: const Alignment(0.6, 0.75),
               child: TextButton(
                   style: ButtonStyle(
                     foregroundColor: MaterialStateProperty.all<Color>(Colors.grey),
@@ -142,14 +154,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: const Text("Already have an account"),
                 ),
             ),
-
+            const SizedBox(height: 20),
             SizedBox(
               width: 300,
               child: ElevatedButton(
-                style: ButtonStyle(
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                  backgroundColor: MaterialStateProperty.all<Color>(passwordsMatch ? const Color.fromARGB(202, 156, 126, 33) : Colors.grey),
-                ),
                 onPressed: () async {
                   if(passwordsMatch){
                     try {
@@ -177,7 +185,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           });
                         }
                       } else {
-                        // Gérez d'autres erreurs ici
                         print('Error: $error');
                       }
                     }

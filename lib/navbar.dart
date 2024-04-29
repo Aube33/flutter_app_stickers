@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:stickershub/screens/collection_page.dart';
-import 'package:stickershub/screens/home_page.dart';
 import 'package:stickershub/screens/profile_page.dart';
 import 'package:stickershub/screens/clicky_page.dart';
+import 'package:stickershub/screens/trading_page.dart';
 
 class NavBar extends StatefulWidget {
-  const NavBar({Key? key}) : super(key: key);
+  final int position;
+  const NavBar({super.key, required this.position});
 
   @override
   State<NavBar> createState() => _NavBarState();
@@ -13,12 +14,13 @@ class NavBar extends StatefulWidget {
 
 class _NavBarState extends State<NavBar> {
   late PageController _pageController;
-  int _currentIndex = 0;
+  late int _currentIndex;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _currentIndex = widget.position==-1 ? widget.position:0;
   }
 
   @override
@@ -50,6 +52,7 @@ class _NavBarState extends State<NavBar> {
         },
         physics: const NeverScrollableScrollPhysics(),
         children: const <Widget>[
+          TradingPage(),
           ClickyPage(),
           CollectionPage(),
           ProfilePage(),
@@ -65,6 +68,10 @@ class _NavBarState extends State<NavBar> {
           selectedIndex: _currentIndex,
           onDestinationSelected: _onTabTapped,
           destinations: const <NavigationDestination>[
+            NavigationDestination(
+              icon: Icon(Icons.copy_all_outlined),
+              label: 'Trading',
+            ),
             NavigationDestination(
               icon: Icon(Icons.touch_app),
               label: 'Clicker',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:stickershub/navbar.dart';
 import 'package:stickershub/screens/auth_page.dart';
 import 'package:stickershub/screens/clicky_page.dart';
 import 'package:stickershub/screens/collection_page.dart';
@@ -15,11 +16,11 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(App());
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
+class App extends StatelessWidget {
+  App({super.key});
 
   MaterialColor blackSwatch = MaterialColor(
     Colors.black.value,
@@ -37,14 +38,13 @@ class MyApp extends StatelessWidget {
     },
   );
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = ColorScheme.fromSwatch(
       primarySwatch: blackSwatch,
       brightness: Brightness.light,
       cardColor: Colors.white,
-      backgroundColor: Color.fromARGB(255, 255, 246, 235),
+      backgroundColor: const Color.fromARGB(255, 255, 246, 235),
       errorColor: Colors.red,
     );
     return MaterialApp(
@@ -55,23 +55,16 @@ class MyApp extends StatelessWidget {
 
         appBarTheme: AppBarTheme(
           backgroundColor: colorScheme.background,
-          shadowColor: Colors.transparent,
+          shadowColor: Colors.grey.withOpacity(0.5),
           elevation: 0.0,
           centerTitle: true,
-          scrolledUnderElevation: 10.0,
+          scrolledUnderElevation: 2.0,
           toolbarHeight: 72.0,
           titleTextStyle: const TextStyle(
             color: Colors.black, 
             fontSize: 40.0, 
             fontWeight: FontWeight.normal,
             fontFamily: 'Goldplay',
-            shadows: [
-              Shadow(
-                color: Colors.white,
-                offset: Offset(3, 3),
-                blurRadius: 0.0,
-              ),
-            ],
           ),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
@@ -90,17 +83,42 @@ class MyApp extends StatelessWidget {
 
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all<Color>(Theme.of(context).colorScheme.inversePrimary),
+            backgroundColor: MaterialStateProperty.resolveWith<Color>(
+              (Set<MaterialState> states) {
+                if (states.contains(MaterialState.disabled)) {
+                  return const Color.fromARGB(255, 200, 200, 200);
+                }
+                return const Color.fromARGB(255, 238, 187, 48);
+              },
+            ),
+            foregroundColor: MaterialStateProperty.resolveWith<Color>(
+              (Set<MaterialState> states) {
+                if (states.contains(MaterialState.disabled)) {
+                  return Colors.grey;
+                }
+                return Colors.white;
+              },
+            ),
+            textStyle: MaterialStateProperty.all<TextStyle>(const TextStyle(
+              fontSize: 20,
+              fontFamily: 'GoldPlay',
+            )),
             shadowColor: MaterialStateProperty.all<Color>(Colors.black),
             overlayColor: MaterialStateProperty.resolveWith<Color?>(
               (Set<MaterialState> states) {
                 if (states.contains(MaterialState.pressed)) {
-                  return Colors.grey.withOpacity(0.5); // or any other color you want for the pressed state
+                  return Colors.grey.withOpacity(0.5);
                 }
-                return null; // return null for the default color when not pressed
+                return null;
               },
             ),
           ),
+        ),
+
+        inputDecorationTheme: const InputDecorationTheme(
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.black)
+          )
         ),
 
         navigationBarTheme: NavigationBarThemeData(
@@ -139,13 +157,15 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => const LoginPage());
           case '/register':
             return MaterialPageRoute(builder: (_) => const RegisterPage());
+          case '/trading':
+            return MaterialPageRoute(builder: (_) => const NavBar(position: 0));
           case '/auth':
-            return MaterialPageRoute(builder: (_) => AuthCheckPage());
+            return MaterialPageRoute(builder: (_) => const AuthCheckPage());
           default:
             return MaterialPageRoute(builder: (_) => const NotFoundPage());
         }
       },
-      home: AuthCheckPage(),
+      home: const AuthCheckPage(),
     );
   }
 }

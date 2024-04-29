@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:stickershub/screens/register_page.dart';
-import 'package:stickershub/screens/auth_page.dart';
 import '../functions/firebase_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -22,14 +20,27 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        leading: null,
-      ),
+      resizeToAvoidBottomInset: false,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            const Text(
+              'StickerHub',
+              style: TextStyle(fontFamily: 'GoldPlay', fontSize: 20),
+            ),
+            const Text(
+              'Login',
+              style: TextStyle(fontFamily: 'GoldPlay', fontSize: 50),
+            ),
+            SizedBox(
+              height: 130,
+              child: Image.asset(
+                'assets/pizza-01.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(height: 40),
             SizedBox(
               width: 300,
               child: TextFormField(
@@ -44,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                 }),
               ),
             ),
+            const SizedBox(height: 20,),
             SizedBox(
               width: 300,
               child: TextFormField(
@@ -102,22 +114,15 @@ class _LoginPageState extends State<LoginPage> {
 
               ],
             ),
+            const SizedBox(height: 20),
             SizedBox(
               width: 300,
               child: ElevatedButton(
-                style: ButtonStyle(
-                  foregroundColor:
-                      MaterialStateProperty.all<Color>(Colors.white),
-                  backgroundColor: MaterialStateProperty.all<Color>((_emailTxtController.text.isNotEmpty && _passwordTxtController.text.isNotEmpty ) ? const Color.fromARGB(202, 156, 126, 33) : Colors.grey)),
                 onPressed: () async {
                   try {
                     UserCredential? result = await loginUser(
                         _emailTxtController.text, _passwordTxtController.text);
                     if (result != null) {
-                      /*
-                      print('User signed in: ${result.user?.email}');
-                      print(FirebaseAuth.instance.currentUser);
-                      */
                       Navigator.pushReplacementNamed(context, "/auth");
                     } else {
                       setState(() {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:stickershub/functions/firebase_functions.dart';
 
 class NotFoundPage extends StatefulWidget {
   const NotFoundPage({super.key});
